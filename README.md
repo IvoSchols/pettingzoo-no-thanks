@@ -28,4 +28,3 @@ The game ends when the last card is taken from the middle (i.e., no draw pile an
     - Crucial exception: If you have a sequence of cards (e.g., 20, 21, 22), you only score the lowest value in that run.
 - Each chip you have at the end of the game counts as -1 point.
 - The player with the lowest score wins.
-
