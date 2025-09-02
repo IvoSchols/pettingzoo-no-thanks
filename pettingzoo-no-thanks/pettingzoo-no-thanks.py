@@ -85,8 +85,7 @@ class raw_env(AECEnv, EzPickle):
                 self.board.current_player_index
             ], dtype=np.int8),
             player_chips,
-            all_hands_vectors[agent_idx], # Own hand
-            np.concatenate([h for i, h in enumerate(all_hands_vectors) if i != agent_idx]) # Opponent hands
+            all_hands_vectors, # Own hand (current_player_index) & Opponent hands
         ])
         
         # Create action mask
