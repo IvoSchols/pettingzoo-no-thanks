@@ -1,3 +1,5 @@
+import numpy as np
+
 class Board:
     """
     Represents the game board for the No Thanks! game.

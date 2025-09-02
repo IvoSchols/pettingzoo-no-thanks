@@ -3,7 +3,8 @@ import numpy as np
 import pygame
 from gymnasium.spaces import Box, Dict, Discrete
 from pettingzoo.utils.env import AECEnv
-from pettingzoo.utils import agent_selector, wrappers
+from pettingzoo.utils import wrappers
+from pettingzoo.utils.agent_selector import agent_selector
 
 from gymnasium.utils import EzPickle
 
@@ -70,15 +71,9 @@ class raw_env(AECEnv, EzPickle):
         agent_idx = self.agent_name_mapping[agent]
         
         # Create observation vector
-        player_chips = np.array([self.board.player_chip_counts[i] for i in range(self.num_players)], dtype=np.int8)
-        
-        all_hands_vectors = []
-        for i in range(self.num_players):
-            hand_vec = np.zeros(33, dtype=np.int8)
-            for card in self.board.player_hands[i]:
-                hand_vec[card - 3] = 1
-            all_hands_vectors.append(hand_vec)
-        
+        player_chips = np.array([self.board.player_chip_counts[i] for i in range(self.num_players)], dtype=np.int8)       
+        all_hands_vectors_flat = self.board.player_hands.flatten()
+
         obs = np.concatenate([
             np.array([
                 self.board.current_card if self.board.current_card else 0,
@@ -87,7 +82,7 @@ class raw_env(AECEnv, EzPickle):
                 self.board.current_player_index
             ], dtype=np.int8),
             player_chips,
-            all_hands_vectors, # Own hand (current_player_index) & Opponent hands
+            all_hands_vectors_flat, # Own hand (current_player_index) & Opponent hands
         ])
         
         # Create action mask
