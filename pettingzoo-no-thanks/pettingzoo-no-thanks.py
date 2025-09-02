@@ -7,6 +7,8 @@ from pettingzoo.utils import agent_selector, wrappers
 
 from gymnasium.utils import EzPickle
 
+from board import Board
+
 # The maximum number of moves in a game. Used for truncation.
 MAX_MOVES = (35 - 3 + 1 - 9) * 7  # (Number of cards) * (Max players)
 
