@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{ include = "pettingzoo_no_thanks", from = "src" }]
+packages = [{ include = "pettingzoo_no_thanks" }]
 
 
 [build-system]
