@@ -11,7 +11,7 @@ def test_pettingzoo_api_compliance(make_env):
     """
     _n, factory = make_env
     env_instance = factory()
-    api_test(env_instance, num_cycles=100, verbose=False)
+    api_test(env_instance, num_cycles=100)
 
 
 def test_pettingzoo_seed_reproducibility(module):

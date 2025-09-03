@@ -1,5 +1,4 @@
 # tests/test_no_thanks_env.py
-import pettingzoo_no_thanks as env_module
 import numpy as np
 import pytest
 

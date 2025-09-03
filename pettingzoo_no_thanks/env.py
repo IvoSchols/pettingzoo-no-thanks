@@ -8,7 +8,12 @@ from gymnasium.utils import EzPickle
 
 from pettingzoo.utils.env import AECEnv
 from pettingzoo.utils import wrappers
-from pettingzoo.utils.agent_selector import agent_selector
+
+try:
+    from pettingzoo.utils import AgentSelector
+except ImportError:
+    from pettingzoo.utils.agent_selector import agent_selector as AgentSelector
+
 
 from .board import Board
 
@@ -23,8 +28,6 @@ def env(num_players=3, render_mode=None):
     """
     internal_render_mode = render_mode if render_mode != "ansi" else "human"
     base = raw_env(num_players=num_players, render_mode=internal_render_mode)
-    base = wrappers.AssertOutOfBoundsWrapper(base)
-    base = wrappers.OrderEnforcingWrapper(base)
     return base
 
 
@@ -49,7 +52,7 @@ class raw_env(AECEnv, EzPickle):
 
         # --- PettingZoo API attributes ---
         self.agents = self.possible_agents[:]
-        self._agent_selector = agent_selector(self.agents)
+        self._agent_selector = AgentSelector(self.agents)
         self.terminations = {agent: False for agent in self.agents}
         self.truncations = {agent: False for agent in self.agents}
         self.rewards = {agent: 0 for agent in self.agents}
@@ -71,8 +74,9 @@ class raw_env(AECEnv, EzPickle):
         self.observation_spaces = {agent: self._obs_space for agent in self.possible_agents}
 
         self.render_mode = render_mode
-        self.screen = None
-        self.clock = None
+        self._screen = None
+        self._clock = None
+        self._surface_size = (600, 400)  # (width, height) for rendering
 
     # ---- New PettingZoo space methods (required by wrappers) ----
     def observation_space(self, agent):
@@ -124,12 +128,22 @@ class raw_env(AECEnv, EzPickle):
             return
 
         # Perform action (respect mask)
-        mask = self._get_legal_moves(agent_idx)
-        if action is None or mask[int(action)] == 0:
-            # dead/illegal -> no-op; you could penalize slightly if desired
+        if action is None:
             pass
         else:
-            self.board.play_turn(agent_idx, int(action))
+            a = int(action)
+            mask = self._get_legal_moves(agent_idx)
+
+            if a == 0 and mask[0] == 0:
+                # User attempted to place a chip but has none -> forced take
+                self.board.play_turn(agent_idx, 1)
+            elif mask[a] == 1:
+                self.board.play_turn(agent_idx, a)
+            else:
+                # dead/illegal -> no-op; you could penalize slightly if desired
+                pass
+
+
 
         # End of game?
         if self.board.is_game_over():
@@ -164,8 +178,18 @@ class raw_env(AECEnv, EzPickle):
 
         self.board = Board(self.num_players, np.random.default_rng(seed))
 
-        self.agent_selection = self._agent_selector.reset()
+        self._agent_selector = AgentSelector(self.agents)
+        self.agent_selection = (
+            self._agent_selector.reset() if hasattr(self._agent_selector, "reset")
+            else self.agents[0]
+        )
         first_agent = self.agents[0]
+
+        if getattr(self, "_screen", None) is not None:
+            pygame.quit()
+        self._screen = None
+        self._clock = None
+
         return self.observe(first_agent), self.infos[first_agent]
 
     # --- Rendering ---
